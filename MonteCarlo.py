@@ -39,7 +39,7 @@ def calc_return(seq,discount_factor):
 
 
 def first_visit_evaluation(env,policy,discount_factor=1.0):
-    V = np.random.rand(16)
+    V = np.random.rand(164)
     returns = [ []*1 for i in range(16)]
     for i in range(10000):
         episode = random_episode(env,policy)
@@ -66,6 +66,34 @@ def every_visit_evaluation(env,policy,discount_factor=1.0):
             visited_states.add(state)
     return V
 
+def first_visit_q_evaluation(env,policy,discount_factor=1.0):
+    Q = np.random.rand(16,4)
+    k_s = np.zeros((16,4))
+    for i in range(100000):
+        episode = random_episode(env,policy)
+        for index,[state,action,_] in enumerate(episode):
+            visited_state_action_pairs = set()
+            if (state,action) not in visited_state_action_pairs:
+                k_s[state,action] += 1
+                G = calc_return(episode[index:],discount_factor)
+                Q[state][action] = Q[state][action] + 1/k_s[state][action] * (G-Q[state][action])
+                visited_state_action_pairs.add((state,action))
+    return Q
+
+def every_visit_q_evaluation(env,policy,discount_factor=1.0):
+    Q = np.random.rand(16,4)
+    k_s = np.zeros((16,4))
+    for i in range(100000):
+        episode = random_episode(env,policy)
+        for index,[state,action,_] in enumerate(episode):
+            visited_state_action_pairs = set()
+            k_s[state,action] += 1
+            G = calc_return(episode[index:],discount_factor)
+            Q[state][action] = Q[state][action] + 1/k_s[state][action] * (G-Q[state][action])
+            visited_state_action_pairs.add((state,action))
+    return Q
+
+def control(env,)
 
 if __name__ == '__main__':
     print("Sizes")
@@ -83,5 +111,6 @@ if __name__ == '__main__':
     policy_dict = {0: 1, 1: 2, 2: 1, 3: 0, 4: 1, 6: 1, 8: 2, 9: 0, 10: 1, 13: 2, 14: 2}  # random
     policy = lambda s: policy_dict[s]
 
-    print(first_visit_evaluation(env, policy))
-    print(every_visit_evaluation(env,policy))
+    print(first_visit_q_evaluation(env, policy))
+    print("")
+    print(every_visit_q_evaluation(env,policy))
